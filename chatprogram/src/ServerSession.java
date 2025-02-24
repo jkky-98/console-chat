@@ -40,7 +40,7 @@ public class ServerSession implements Runnable {
             }
         } catch (IOException e) {
             MyLogger.log(e);
-        } finally {
+        }finally {
             sessionManager.remove(this);
             close();
         }

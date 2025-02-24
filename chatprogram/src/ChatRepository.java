@@ -1,3 +1,5 @@
+import exception.RepositoryException;
+
 import java.util.*;
 
 public class ChatRepository {
@@ -16,16 +18,32 @@ public class ChatRepository {
         userDataBase.put(userName, session);
     }
 
-    public synchronized List<ServerSession> findAllNotMe(ServerSession session) {
-        List<ServerSession> result = new ArrayList<ServerSession>();
+    public synchronized String findNameByServerSession(ServerSession session) {
 
-        userDataBase.values()
+        Optional<String> first = userDataBase.entrySet()
                 .stream()
-                .filter(key -> !key.equals(session))
-                .forEach(result::add);
+                .filter(entry -> entry.getValue().equals(session))
+                .map(
+                        Map.Entry::getKey
+                )
+                .findFirst();
 
-        return result;
+        return first.orElseThrow(() -> new RepositoryException("\uD83E\uDD14 입장 하셨나요??"));
+    }
 
+    public synchronized List<ServerSession> findAllServerSession() {
+
+        return userDataBase.values()
+                .stream()
+                .toList();
+    }
+
+    public synchronized List<ServerSession> findAllServerSessionWithoutMe(ServerSession session) {
+
+        return userDataBase.values()
+                .stream()
+                .filter(s -> !s.equals(session))
+                .toList();
     }
 
     public synchronized Set<String> findAll() {

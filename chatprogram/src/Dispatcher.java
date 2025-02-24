@@ -1,3 +1,5 @@
+import exception.RepositoryException;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -25,10 +27,12 @@ public class Dispatcher {
         } else if (
                 command.startsWith("/message|") && command.split("\\|").length == 2
         ) {
-            String message = command.split("\\|")[1];
-            String messageResult = chatService.messageResponse(message, serverSession);
-
-            dataOutputStream.writeUTF(messageResult);
+            try {
+                String message = command.split("\\|")[1];
+                chatService.messageResponse(message, serverSession);
+            } catch (RepositoryException e) {
+                dataOutputStream.writeUTF("Error: " + e.getMessage());
+            }
 
         } else if (
                 command.startsWith("/change|") && command.split("\\|").length == 2

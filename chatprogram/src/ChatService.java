@@ -12,20 +12,36 @@ public class ChatService {
     public String join(String name, ServerSession session) {
         if (!chatRepository.existsByName(name)) {
             chatRepository.join(name, session);
-            return "Join Success: " + name;
+
+            List<ServerSession> allWithoutMe = chatRepository.findAllServerSessionWithoutMe(session);
+
+            for (ServerSession s : allWithoutMe) {
+                try {
+                    s.sendMessage(name+ "님이 입장하셨습니다. ❗");
+                } catch (IOException e) {
+                    MyLogger.log(e);
+                }
+            }
+
+            return "채팅방에 입장하셨습니다 - 닉네임: " + name;
         } else {
-            return "이미 존재하는 회원입니다.";
+            return "이미 존재하는 회원입니다. 다른 닉네임을 사용해주세요.";
         }
     }
 
-    public String messageResponse(String message, ServerSession session) throws IOException {
+    public void messageResponse(String message, ServerSession session) throws IOException {
 
-        List<ServerSession> allSession = chatRepository.findAllNotMe(session);
+        List<ServerSession> allSession = chatRepository.findAllServerSession();
+
+        String nameMessageSender = chatRepository.findNameByServerSession(session);
+
         for (ServerSession s : allSession) {
-            s.sendMessage(message);
+            if (!s.equals(session)) {
+                s.sendMessage("[" + nameMessageSender + "] : " + message);
+            } else {
+                s.sendMessage("[Me] : " + message);
+            }
         }
-
-        return "전체 회원 " + allSession.size() +  "명에게 성공적으로 메세지를 보냈습니다.";
     }
 
     public String changeName(String nameNeedToChange, ServerSession session) {

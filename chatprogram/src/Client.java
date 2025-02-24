@@ -25,7 +25,7 @@ public class Client {
                 try {
                     while (true) {
                         String received = input.readUTF(); // 서버에서 메시지 수신
-                        System.out.println("\n📩 [서버 메시지] " + received);
+                        System.out.println("\n📩 " + received);
                         System.out.print("명령어 입력: "); // 입력 프롬프트 다시 표시
                     }
                 } catch (IOException e) {
@@ -36,15 +36,14 @@ public class Client {
             receiveThread.setDaemon(true);
             receiveThread.start();
 
-            while (!endCondi) {
-                System.out.println("명령어 목록");
-                System.out.println("입장: /join|{name}");
-                System.out.println("메세지: /message|{message}");
-                System.out.println("이름 변경: /change|{name}");
-                System.out.println("전체 사용자 조회: /users");
-                System.out.println("종료: /exit");
+            boolean firstLoop = true;
 
-                System.out.println("명령어 입력: ");
+            while (!endCondi) {
+                if (firstLoop) {
+                    helpConsole();
+                    firstLoop = false; // 첫 루프 이후에는 다시 실행되지 않도록 설정
+                }
+
                 String command = sc.nextLine();
 
                 if (command.startsWith("/join|") && command.split("\\|").length == 2) {
@@ -67,12 +66,30 @@ public class Client {
                     output.writeUTF(command);
                     endCondi = true;
                     MyLogger.log("클라이언트 종료");
+                } else if (
+                        command.equals("/help")
+                ) {
+                    helpConsole();
                 } else {
                     System.out.println("잘못된 명령어입니다. 다시 입력하세요.");
+                    System.out.println("명령어 입력: ");
                 }
             }
         } catch (IOException e) {
             MyLogger.log(e);
         }
+    }
+
+    private static void helpConsole() {
+        System.out.println("================================");
+        System.out.println(" 📢 명령어 목록 ");
+        System.out.println("================================");
+        System.out.println("🚪 입장:            /join|{name}");
+        System.out.println("💬 메세지 전송:      /message|{message}");
+        System.out.println("✏️  이름 변경:       /change|{name}");
+        System.out.println("👥 전체 사용자 조회:  /users");
+        System.out.println("❌ 종료:            /exit");
+        System.out.println("================================");
+        System.out.println("명령어 입력: ");
     }
 }
